@@ -1,36 +1,59 @@
 from collections import Counter
+from fractions import Fraction
 from math import gcd
 from functools import reduce
 import sys
 
 A, B, C = [list(map(int, line.split())) for line in sys.stdin.read().splitlines()[1:]]
 
-sum_hist = Counter(a+b for a in A for b in B)
+sums = Counter(a+b for a in A for b in B)
 
-C_freq = Counter(C)
-c_min = min(C_freq)
+known_die = Counter(C)
+min_known = min(known_die)
 
-unknown_counts = Counter()
+new_die = Counter()
 
-while sum_hist:
-    s = min(sum_hist)
-    k = sum_hist[s]
+while sums:
+    s = min(sums)
+    k = sums[s]
 
-    m = k // C_freq[c_min]
-    d = s-c_min
-    unknown_counts[d] += m
+    multiplier = Fraction(sums[s], known_die[min(known_die)])
+    d = s - min(known_die)
+    new_die[d] += multiplier
 
-    for c, cnt_c in C_freq.items():
-        t = c+d
-        sum_hist[t] -= cnt_c * m
-        if sum_hist[t] == 0:
-            del sum_hist[t]
+    for face_val, cnt in known_die.items():
+        t = face_val + d
+        if t in sums:
+            sums[t] -= cnt * multiplier
+            if sums[t] == 0:
+                del sums[t]
+
+print(new_die)
+print(f"number\toccurence")
+for key in new_die.keys():
+    print(f"{key}\t{new_die[key]}")
+
+print("")
+denom = 1
+for v in new_die.values():
+    denom = denom * v.denominator // gcd(denom, v.denominator)
+
+faces = []
+for face, v in new_die.items():
+    faces.extend([face] * int(v * denom))
+
+g = 0
+for cnt in Counter(faces).values():
+    g = gcd(g, cnt)
+if g > 1:
+        face_counts = Counter(faces)
+
+        reduced = []
+        for face, cnt in face_counts.items():
+            reduced.extend([face] * (cnt // g))
+
+        faces = sorted(reduced)
 
 
-g = reduce(gcd, unknown_counts.values())
-result = []
-for face, count in unknown_counts.items():
-    result.extend([face] * (count // g))
-
-print(len(result))
-print(' '.join(map(str, sorted(result))))
+print(len(faces))
+print(' '.join(map(str, faces)))
