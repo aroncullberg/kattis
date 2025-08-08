@@ -4,17 +4,30 @@ from math import gcd, lcm
 from functools import reduce
 import sys
 import heapq
+import time
 
+t0 = time.perf_counter()
 
 A, B, C = [list(map(int, line.split())) for line in sys.stdin.read().splitlines()[1:]]
 
+dt = time.perf_counter() - t0
+# print(f"{dt * 1000:.3f}ms\tIO")
+t0 = time.perf_counter()
+
 sums = Counter(a+b for a in A for b in B)
+# print(sums)
 sums_heap = list(sums.keys())
+# print(f"sums_heap (before heapify): {sums_heap}")
 heapq.heapify(sums_heap)
+# print(f"sums_heap (after heapify): {sums_heap}")
 known_die = Counter(C)
 min_known = min(known_die)
 new_die = Counter()
 known_die_min = min(known_die)
+
+dt = time.perf_counter() - t0
+# print(f"{dt * 1000:.3f}ms\tSetup of vars")
+t0 = time.perf_counter()
 
 while sums_heap:
     s = heapq.heappop(sums_heap)
@@ -34,8 +47,25 @@ while sums_heap:
             if sums[t] == 0:
                 del sums[t]
 
+dt = time.perf_counter() - t0
+# print(f"{dt * 1000:.3f}ms\tLoop to generate new die faces prototype")
+t0 = time.perf_counter()
+
+# denom = 1
+# for value in new_die.values():
+#     denom = denom * value.denominator // gcd(denom, value.denominator)
+
+# dt = time.perf_counter() - t0
+# # print(f"{dt * 1000:.4f}ms\t Old denominator method")
+# t0 = time.perf_counter()
 
 denom = reduce(lcm, [value.denominator for value in new_die.values()], 1)
+
+dt = time.perf_counter() - t0
+# print(f"{dt * 1000:.4f}ms\t New denominator method")
+t0 = time.perf_counter()
+
+faces = []
 
 face_counts =  {}
 for face, v in new_die.items():
@@ -53,5 +83,20 @@ for face, cnt in face_counts.items():
     faces2.extend([face] * cnt)
 faces2.sort()
 
+dt = time.perf_counter() - t0
+# print(f"{dt * 1000:.3f}ms\t new")
+t0 = time.perf_counter()
+
 print(len(faces2))
 print(' '.join(map(str, faces2)))
+
+
+# (base) aroncull100@23a737045eaa:~/work/kattis/dicedistributions$ python dicedistributions.py < dicedistributions1.in 
+# 0.054ms IO
+# 0.071ms Setup of vars
+# 0.361ms Loop to generate new die faces prototype
+# 0.008ms Extracting denominators
+# 0.044ms Time for making new faces list:  
+# 0.014ms reducing list for uneccessary dupblicates
+# 6
+# 1 2 3 4 5 6
