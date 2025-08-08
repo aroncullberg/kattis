@@ -6,13 +6,11 @@ import sys
 import heapq
 import time
 
-t0 = time.perf_counter()
 
 A, B, C = [list(map(int, line.split())) for line in sys.stdin.read().splitlines()[1:]]
 
-dt = time.perf_counter() - t0
-# print(f"{dt * 1000:.3f}ms\tIO")
 t0 = time.perf_counter()
+
 
 sums = Counter(a+b for a in A for b in B)
 # print(sums)
@@ -24,11 +22,6 @@ known_die = Counter(C)
 min_known = min(known_die)
 new_die = Counter()
 known_die_min = min(known_die)
-
-dt = time.perf_counter() - t0
-# print(f"{dt * 1000:.3f}ms\tSetup of vars")
-t0 = time.perf_counter()
-
 while sums_heap:
     s = heapq.heappop(sums_heap)
     if s not in sums or sums[s] == 0:
@@ -47,23 +40,7 @@ while sums_heap:
             if sums[t] == 0:
                 del sums[t]
 
-dt = time.perf_counter() - t0
-# print(f"{dt * 1000:.3f}ms\tLoop to generate new die faces prototype")
-t0 = time.perf_counter()
-
-# denom = 1
-# for value in new_die.values():
-#     denom = denom * value.denominator // gcd(denom, value.denominator)
-
-# dt = time.perf_counter() - t0
-# # print(f"{dt * 1000:.4f}ms\t Old denominator method")
-# t0 = time.perf_counter()
-
 denom = reduce(lcm, [value.denominator for value in new_die.values()], 1)
-
-dt = time.perf_counter() - t0
-# print(f"{dt * 1000:.4f}ms\t New denominator method")
-t0 = time.perf_counter()
 
 faces = []
 
@@ -84,7 +61,7 @@ for face, cnt in face_counts.items():
 faces2.sort()
 
 dt = time.perf_counter() - t0
-# print(f"{dt * 1000:.3f}ms\t new")
+print(f"{dt * 1000:.3f}ms\t time to loop OLD")
 t0 = time.perf_counter()
 
 print(len(faces2))

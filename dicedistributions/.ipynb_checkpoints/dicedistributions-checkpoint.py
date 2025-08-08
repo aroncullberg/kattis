@@ -3,34 +3,34 @@ from fractions import Fraction
 from math import gcd, lcm
 from functools import reduce
 import sys
-import heapq
-
 
 A, B, C = [list(map(int, line.split())) for line in sys.stdin.read().splitlines()[1:]]
 
-sums = Counter(a+b for a in A for b in B)
-sums_heap = list(sums.keys())
-heapq.heapify(sums_heap)
-known_die = Counter(C)
-min_known = min(known_die)
+sums = Counter()
+CA, CB = Counter(A), Counter(B)
+for va, ca in CA.items():
+    for vb,cb in CB.items():
+        sums[va+vb] += ca * cb
+
+known = Counter(C)
+kmin = min(known)
+kmin_cnt = known[kmin]
+known_items = list(known.items())
+
 new_die = Counter()
-known_die_min = min(known_die)
-
-while sums_heap:
-    s = heapq.heappop(sums_heap)
-    if s not in sums or sums[s] == 0:
+for s in sorted(sums):
+    k = sums.get(s,0)
+    if k == 0:
         continue
-        
-    k = sums[s]
 
-    multiplier = Fraction(sums[s], known_die[known_die_min])
-    d = s - known_die_min
-    new_die[d] += multiplier
+    mult = Fraction(k, kmin_cnt)
+    d = s - kmin
+    new_die[d] += mult
 
-    for face_val, cnt in known_die.items():
-        t = face_val + d
+    for fv, cnt in known_items:
+        t = fv+d
         if t in sums:
-            sums[t] -= cnt * multiplier
+            sums[t] -= cnt*mult
             if sums[t] == 0:
                 del sums[t]
 
